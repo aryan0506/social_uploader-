@@ -1,12 +1,22 @@
-from sqlalchemy import create_engine # this function starts the engine to connect the postgres with fastapi 
-from sqlalchemy.orm import sessionmaker # this function starts the session to operate operation on database
-from sqlalchemy.ext.declarative import declarative_base # this function converts the python class to the database table
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
+from sqlalchemy.orm import sessionmaker, declarative_base
 
-POSTGRESQL_URL = 'postgresql;//postgres:admin@localhost:5432/project2'# this is the postgesql url through which the database and 
+DATABASE_URL = "postgresql+asyncpg://postgres:admin@localhost:5432/project2"
 
-engine = create_engine(POSTGRESQL_URL)
+engine = create_async_engine(
+    DATABASE_URL,
+    echo=False,
+)
 
-Sessionlocal = sessionmaker(autocommit = False , autoflush = False , bind = engine)
+AsyncSessionLocal = sessionmaker(
+    bind=engine,
+    expire_on_commit=False,
+    class_=AsyncSession,
+)
 
-base = declarative_base()
+Base = declarative_base()
 
+
+async def get_db():
+    async with AsyncSessionLocal() as session:
+        yield session
